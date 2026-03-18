@@ -1,10 +1,8 @@
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import User
+from .models import User, PatientProfile
 from .serializers import RegisterSerializer, UserSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework.views import APIView
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -17,3 +15,18 @@ class CurrentUserView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+class PatientListView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(role='patient')
+
+class PatientDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(role='patient')
+
