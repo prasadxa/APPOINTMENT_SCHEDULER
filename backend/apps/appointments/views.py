@@ -1,0 +1,20 @@
+from rest_framework import viewsets, permissions
+from .models import Appointment
+from .serializers import AppointmentSerializer
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'patient':
+            return Appointment.objects.filter(patient=user)
+        elif user.role == 'doctor':
+            return Appointment.objects.filter(doctor__user=user)
+        elif user.role == 'admin':
+            return Appointment.objects.all()
+        return Appointment.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save(patient=self.request.user)
